@@ -32,14 +32,14 @@ namespace CourseLibrary.API
             }).AddXmlDataContractSerializerFormatters();
 
             services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
-             
+
             services.AddScoped<ICourseLibraryRepository, CourseLibraryRepository>();
 
             services.AddDbContext<CourseLibraryContext>(options =>
             {
                 options.UseSqlServer(
                     @"Server=(localdb)\mssqllocaldb;Database=CourseLibraryDB;Trusted_Connection=True;");
-            }); 
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -49,15 +49,26 @@ namespace CourseLibrary.API
             {
                 app.UseDeveloperExceptionPage();
             }
-
-            app.UseRouting();
-
-            app.UseAuthorization();
-
-            app.UseEndpoints(endpoints =>
+            else
             {
-                endpoints.MapControllers();
-            });
+                app.UseExceptionHandler(appBuilder =>
+                {
+                    appBuilder.Run(async context =>
+                    {
+                        context.Response.StatusCode = 500;
+                        await context.Response.WriteAsync("An unexpected fault happned. Try again later");
+                    });
+                });
+            }
+
+                app.UseRouting();
+
+                app.UseAuthorization();
+
+                app.UseEndpoints(endpoints =>
+                {
+                    endpoints.MapControllers();
+                });
         }
     }
 }
